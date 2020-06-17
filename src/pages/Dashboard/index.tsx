@@ -86,6 +86,7 @@ const Dashboard: React.FC = () => {
 
       if (!foodsData) {
         console.log('Error: erro ao retornar foods');
+        return;
       }
 
       const formattedPriceFoods = foodsData.map(food => {
