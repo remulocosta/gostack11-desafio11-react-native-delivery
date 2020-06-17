@@ -33,13 +33,12 @@ const Orders: React.FC = () => {
   useEffect(() => {
     async function loadOrders(): Promise<void> {
       // Load orders from API
-
       const responseOrders = await api.get<Food[]>('/orders');
 
       const ordersData = responseOrders.data;
 
       if (!ordersData) {
-        console.log('Error: erro ao retornar foods');
+        console.log('Error: orders not found');
         return;
       }
 

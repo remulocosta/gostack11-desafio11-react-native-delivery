@@ -55,6 +55,7 @@ interface Food {
   name: string;
   description: string;
   price: number;
+  category: number;
   image_url: string;
   formattedPrice: string;
   extras: Extra[];
@@ -65,6 +66,7 @@ const FoodDetails: React.FC = () => {
   const [extras, setExtras] = useState<Extra[]>([]);
   const [isFavorite, setIsFavorite] = useState(false);
   const [foodQuantity, setFoodQuantity] = useState(1);
+  const [totalCart, setTotalCart] = useState(0);
 
   const navigation = useNavigation();
   const route = useRoute();
@@ -84,6 +86,12 @@ const FoodDetails: React.FC = () => {
         console.log('Error: food not found');
         return;
       }
+
+      // const responseFavorite = await api.get('/favorites', { id: foodId });
+      // const favoriteData = responseFavorite.data;
+      // if (favoriteData) {
+      //    setIsFavorite(true);
+      //  }
 
       const foodExtras = foodData.extras.map(extra => {
         return {
@@ -144,6 +152,28 @@ const FoodDetails: React.FC = () => {
 
   const toggleFavorite = useCallback(() => {
     // Toggle if food is favorite or not
+
+    const favoriteItem = {
+      id: food.id,
+      name: food.name,
+      description: food.description,
+      price: food.price,
+      category: food.category,
+      image_url: food.image_url,
+      thumbnail_url: food.image_url,
+    };
+
+    // if (isFavorite) {
+    //   api.delete('/favorites', { params: { id: food.id } });
+    //   setIsFavorite(false);
+    // } else {
+    //   api.post('/favorites', favoriteItem);
+    //   setIsFavorite(true);
+    // }
+
+    // console.log('toggleFavorite');
+
+    setIsFavorite(!isFavorite);
   }, [isFavorite, food]);
 
   const cartTotal = useMemo(() => {
@@ -159,11 +189,30 @@ const FoodDetails: React.FC = () => {
 
     const subTotal = foodTotal + totalExtras;
 
+    setTotalCart(subTotal);
+
     return formatValue(subTotal);
   }, [extras, food, foodQuantity]);
 
   async function handleFinishOrder(): Promise<void> {
     // Finish the order and save on the API
+    try {
+      const newOrder = {
+        product_id: food.id,
+        name: food.name,
+        description: food.description,
+        price: totalCart,
+        category: food.category,
+        thumbnail_url: food.image_url,
+        extras,
+      };
+
+      await api.post('/orders', newOrder);
+
+      navigation.goBack();
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   // Calculate the correct icon name
