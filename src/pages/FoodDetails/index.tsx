@@ -87,12 +87,6 @@ const FoodDetails: React.FC = () => {
         return;
       }
 
-      // const responseFavorite = await api.get('/favorites', { id: foodId });
-      // const favoriteData = responseFavorite.data;
-      // if (favoriteData) {
-      //    setIsFavorite(true);
-      //  }
-
       const foodExtras = foodData.extras.map(extra => {
         return {
           ...extra,
@@ -107,6 +101,12 @@ const FoodDetails: React.FC = () => {
 
       setExtras(foodExtras);
       setFood(formattedPriceFood);
+
+      const { data: responseFavorites } = await api.get<Food[]>('/favorites');
+      const favoritesData = responseFavorites.filter(
+        favorite => favorite.id === foodId,
+      );
+      setIsFavorite(!!favoritesData.length);
     }
 
     loadFood();
@@ -153,25 +153,13 @@ const FoodDetails: React.FC = () => {
   const toggleFavorite = useCallback(() => {
     // Toggle if food is favorite or not
 
-    const favoriteItem = {
-      id: food.id,
-      name: food.name,
-      description: food.description,
-      price: food.price,
-      category: food.category,
-      image_url: food.image_url,
-      thumbnail_url: food.image_url,
-    };
-
-    // if (isFavorite) {
-    //   api.delete('/favorites', { params: { id: food.id } });
-    //   setIsFavorite(false);
-    // } else {
-    //   api.post('/favorites', favoriteItem);
-    //   setIsFavorite(true);
-    // }
-
-    // console.log('toggleFavorite');
+    if (isFavorite) {
+      api.delete(`/favorites/${food.id}`);
+    } else {
+      const favoriteFood = food;
+      delete favoriteFood.extras;
+      api.post('/favorites', favoriteFood);
+    }
 
     setIsFavorite(!isFavorite);
   }, [isFavorite, food]);
